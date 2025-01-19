@@ -1,27 +1,75 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-
-# Configurar o servidor diretamente no código
-from streamlit.web import cli as stcli
-import sys
+from plotly.graph_objects import Figure, Bar, Scatter
 
 # Função para carregar dados
-def load_data():
-    unidades = pd.read_excel('USC - CANOAS.xlsx', sheet_name='Unidades')
-    valores = pd.read_excel('USC - CANOAS.xlsx', sheet_name='Valor')
+def load_data(UC):
+    unidades = pd.read_excel(str('USC - '+str(UC)+str('.xlsx')), sheet_name='Unidades', engine="openpyxl")
+    valores = pd.read_excel(str('USC - '+str(UC)+str('.xlsx')), sheet_name='Valor', engine="openpyxl")
     return unidades, valores
 
-# Carregar os dados
-unidades_df, valores_df = load_data()
-
 # Configurar o layout do dashboard
-st.set_page_config(page_title="Dashboard de Consumo e Custos", layout="wide")
-st.title("Dashboard de Consumo e Custos")
+st.set_page_config(page_title="Dashboard", layout="wide",)
+st.markdown(
+    f"""
+    <h1 style="text-align: center;">CICLO 2024 - 2025</h1>
+    """,
+    unsafe_allow_html=True
+)
 
 # Exibir tabelas de entrada com opção de visualização
 st.sidebar.header("Configurações")
-mostrar_tabelas = st.sidebar.checkbox("Mostrar dados das tabelas")
+
+# Using object notation
+UC_SelectBox = st.sidebar.selectbox("Qual é a unidade consumidora?",("CANOAS", "CUSTODIO", "MUNDAU"))
+
+st.markdown(
+    f"""
+    <h1 style="text-align: center;">UNIDADE {UC_SelectBox}</h1>
+    """,
+    unsafe_allow_html=True
+)
+
+import streamlit as st
+import base64
+
+# Função para converter uma imagem em base64
+def get_base64_image(image_path):
+    with open(image_path, "rb") as file:
+        binary_file = file.read()
+    return base64.b64encode(binary_file).decode()
+
+# Caminho para a imagem local
+image_path = "C:/Users/Gilvan Barbosa/Downloads/logo_usina_santa_clotilde.png"
+
+# Codifica a imagem em base64
+base64_image = get_base64_image(image_path)
+
+# CSS para posicionar a imagem no canto superior direito
+image_html = f"""
+<style>
+#img-container {{
+    position: absolute;
+    top: -200px;
+    right: -50px;
+    z-index: 1;
+}}
+</style>
+<div id="img-container">
+    <img src="data:image/png;base64,{base64_image}" width="150">
+</div>
+"""
+
+# Aplica o CSS no Streamlit
+st.markdown(image_html, unsafe_allow_html=True)
+
+# Carregar os dados
+unidades_df, valores_df = load_data(UC_SelectBox)
+
+mostrar_tabelas = st.sidebar.checkbox("Mostrar tabelas de dados")
+mostrar_indicadores = st.sidebar.checkbox("Mostrar indicadores")
+mostrar_graficos = st.sidebar.checkbox("Mostrar gráficos")
 
 if mostrar_tabelas:
     st.subheader("Dados - Unidades")
@@ -29,42 +77,255 @@ if mostrar_tabelas:
     st.subheader("Dados - Valores")
     st.dataframe(valores_df)
 
-# Gráfico 1: Consumo ao longo do tempo
-st.subheader("Consumo ao longo do tempo")
-fig_consumo = px.line(
-    unidades_df,
-    x='Mês',
-    y=['Consumo Fora Ponta (kWh)', 'Consumo Ponta (kWh)', 'Consumo Reservado (kWh)'],
-    labels={"value": "Consumo (kWh)", "variable": "Tipo de Consumo"},
-    title="Evolução do Consumo (kWh)"
-)
-st.plotly_chart(fig_consumo, use_container_width=True)
+if mostrar_indicadores:
+    # Indicadores
+    st.subheader("Indicadores Gerais", divider = 'blue')
+    col1, col2, col3, col4 = st.columns(4)
 
-# Gráfico 2: Custos ao longo do tempo
-st.subheader("Custos ao longo do tempo")
-fig_custos = px.line(
-    valores_df,
-    x='Mês',
-    y=['Consumo Fora Ponta (R$)', 'Consumo Ponta (R$)', 'Demanda Ativa (R$)', 'Total (R$)'],
-    labels={"value": "Custo (R$)", "variable": "Tipo de Custo"},
-    title="Evolução dos Custos (R$)"
-)
-st.plotly_chart(fig_custos, use_container_width=True)
+    with col1:
+        st.metric(label="Custo Mínimo (R$)", value=f"{valores_df['Total (R$)'].min():,.2f}")
+    with col2:
+        st.metric(label="Custo Médio (R$)", value=f"{valores_df['Total (R$)'].mean():,.2f}")
+    with col3:
+        st.metric(label="Custo Máximo (R$)", value=f"{valores_df['Total (R$)'].max():,.2f}")
+    with col4:
+        n_dem_comp = int((unidades_df['Diferença Demanda (kW)']<0).sum())
+        st.metric(label="Demandas atingidas", value=f"{n_dem_comp}")
 
-# Indicadores
-st.subheader("Indicadores Gerais")
-col1, col2, col3 = st.columns(3)
+    if n_dem_comp<3:
+        col1, col2 = st.columns(2)
+        dif_dem_comp  = int(3-n_dem_comp)
+        with col1:
+            st.metric(label="Nº de Demandas a atingir", value=f"{dif_dem_comp:,.2f}")
+        with col2:
+            dem_comp = 0
+            maiores_demandas = unidades_df['Diferença Demanda (kW)'].sort_values(ascending=False)
+            # Loop para somar até o limite especificado
+            for i, valor in enumerate(maiores_demandas, start=1):
+                if i > dif_dem_comp:  # Verifica se o índice já ultrapassou o limite
+                    break
+                dem_comp += valor
+            st.metric(label="Demanda Complementar atual", value=f"{dem_comp:,.2f}")
+    else:
+        st.write("A quantidade mínima de demandas a serem atingidas foi satisfeita.")
 
-with col1:
-    st.metric(label="Consumo Total Fora Ponta (kWh)", value=f"{unidades_df['Consumo Fora Ponta (kWh)'].sum():,.2f}")
-with col2:
-    st.metric(label="Custo Total (R$)", value=f"{valores_df['Total (R$)'].sum():,.2f}")
-with col3:
-    st.metric(label="Demanda Média (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].mean():,.2f}")
 
-st.write("\\nDesenvolvido com Streamlit e Plotly")
 
-# Configuração para rodar no localhost diretamente no script
+    st.subheader("Indicadores de Demanda", divider = 'blue')
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(label="Demanda Mínima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].min():,.2f}")
+    with col2:
+        st.metric(label="Demanda Média (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].mean():,.2f}")
+    with col3:
+        st.metric(label="Demanda Máxima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].max():,.2f}")
+    with col4:
+        st.metric(label="Custo Total (R$)", value=f"{valores_df['Demanda Ativa (R$)'].sum():,.2f}")
+
+    st.subheader("Indicadores de Consumo Ativo", divider = 'blue')
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(label="Consumo Ativo Mínimo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].min():,.2f}")
+    with col2:
+        st.metric(label="Consumo Ativo Médio (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].mean():,.2f}")
+    with col3:
+        st.metric(label="Consumo Ativo Máximo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].max():,.2f}")
+    with col4:
+        st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Ativo (R$)'].sum():,.2f}")
+
+    st.subheader("Indicadores de Consumo Reativo", divider = 'blue')
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric(label="Consumo Reativo Mínimo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].min():,.2f}")
+    with col2:
+        st.metric(label="Consumo Reativo Médio (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].mean():,.2f}")
+    with col3:
+        st.metric(label="Consumo Reativo Máximo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].max():,.2f}")
+    with col4:
+        st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Reativo (R$)'].sum():,.2f}")
+
+if mostrar_graficos:
+    opções = ["Unidades","Reais (R$)"]
+    mostrar_graficos_Unidades = st.sidebar.radio('Escolha a forma de visualização',['Unidades','Reais (R$)'])
+
+    if mostrar_graficos_Unidades == 'Unidades':
+        # Gráfico: Consumo ativo ao longo do tempo
+        st.subheader("Consumo ao longo do tempo", divider = 'blue')
+        fig_consumo_ativo = px.line(
+            unidades_df,
+            x='Mês',
+            y=['Consumo Fora Ponta (kWh)', 'Consumo Ponta (kWh)', 'Consumo Reservado (kWh)', 'Meta Consumo Ativo Reservado (kWh)'],
+            labels={"value": "Consumo (kWh)", "variable": "Tipo de Consumo"},
+            title="Evolução do Consumo Ativo (kWh)"
+        )
+        st.plotly_chart(fig_consumo_ativo, use_container_width=True)
+
+        # Gráfico: Consumo Reativo ao longo do tempo
+        fig_consumo_reativo = px.line(
+            unidades_df,
+            x='Mês',
+            y=['Consumo Reativo Fora Ponta (kVAr)', 'Consumo Reativo Ponta (kVAr)', 'Consumo Reativo Reservado (kVAr)'],
+            labels={"value": "Consumo (kVAr)", "variable": "Tipo de Consumo"},
+            title="Evolução do Consumo Reativo (kVAr)"
+        )
+        st.plotly_chart(fig_consumo_reativo, use_container_width=True)
+
+        # Gráfico: Demanda ao longo do tempo
+        st.subheader("Demanda ao longo do tempo", divider = 'blue')
+        fig_demanda_no_tempo = px.line(
+            unidades_df,
+            x='Mês',
+            y=['Demanda Ativa (kW)','Demanda Reativa (kVAr)', 'Demanda de Ultrapassagem (kW)'],
+            labels={"value": "Demanda", "variable": "Tipo de Demanda"},
+            title="Evolução da Demanda"
+        )
+        st.plotly_chart(fig_demanda_no_tempo, use_container_width=True)
+
+        # Gráfico combinado com duas escalas
+        st.subheader("Gráfico Combinado: Demanda Ativa e Consumo", divider = 'blue')
+
+        # Selecionar o tipo de consumo
+        consumo_selecionado = st.selectbox(
+            "Escolha o tipo de consumo para exibir no gráfico:",
+            ["Consumo Fora Ponta (kWh)", "Consumo Ponta (kWh)", "Consumo Reservado (kWh)", "Consumo Reativo (kVAr)"]
+        )
+
+        fig_combinado_duplo = Figure()
+
+        # Adicionar colunas para a Demanda Ativa no eixo esquerdo
+        fig_combinado_duplo.add_trace(
+            Bar(
+                x=unidades_df["Mês"],
+                y=unidades_df["Demanda Ativa (kW)"],
+                name="Demanda Ativa (kW)",
+                yaxis="y"
+            )
+        )
+
+        # Adicionar linha para o consumo selecionado no eixo direito
+        fig_combinado_duplo.add_trace(
+            Scatter(
+                x=unidades_df["Mês"],
+                y=unidades_df[consumo_selecionado],
+                mode="lines+markers",
+                name=consumo_selecionado,
+                yaxis="y2"
+            )
+        )
+
+        # Configurar os eixos duplos
+        fig_combinado_duplo.update_layout(
+            title="Gráfico Combinado: Demanda Ativa e Consumo",
+            xaxis=dict(title="Mês"),
+            yaxis=dict(
+                title="Demanda Ativa (kW)",
+                titlefont=dict(color="#1f77b4"),
+                tickfont=dict(color="#1f77b4")
+            ),
+            yaxis2=dict(
+                title=f"{consumo_selecionado}",
+                titlefont=dict(color="#ff7f0e"),
+                tickfont=dict(color="#ff7f0e"),
+                overlaying="y",
+                side="right"
+            ),
+            legend=dict(orientation="h", x=0.5, xanchor="center", y=1.1),
+            margin=dict(l=50, r=50, t=50, b=50)
+        )
+
+        # Exibir o gráfico no Streamlit
+        st.plotly_chart(fig_combinado_duplo, use_container_width=True)
+
+    else:
+        # Gráfico: Custos ao longo do tempo
+        st.subheader("Custos ao longo do tempo", divider = 'blue')
+        #Total
+        fig_custos = px.line(
+            valores_df,
+            x='Mês',
+            y=['Consumo Ativo (R$)', 'Consumo Reativo (R$)'],
+            labels={"value": "Custo (R$)", "variable": "Tipo de Custo"},
+            title="Evolução dos Custos de Consumo Geral (R$)"
+        )
+        st.plotly_chart(fig_custos, use_container_width=True)
+
+        # Consumo Detalhado
+        fig_custos_cons_detalhado = px.line(
+            valores_df,
+            x='Mês',
+            y=['Consumo Fora Ponta (R$)', 'Consumo Ponta (R$)','Consumo Reservado (R$)','Consumo Reativo Fora Ponta (R$)', 'Consumo Reativo Ponta (R$)','Consumo Reativo Reservado (R$)'],
+            labels={"value": "Custo (R$)", "variable": "Tipo de Custo"},
+            title="Evolução dos Custos de Consumo Detalhado (R$)"
+        )
+        st.plotly_chart(fig_custos_cons_detalhado, use_container_width=True)
+
+        #Demanda
+        fig_dem = px.line(
+            valores_df,
+            x='Mês',
+            y=['Demanda Ativa (R$)','Demanda Reativa (R$)','Demanda de Ultrapassagem (R$)'],
+            labels={"value": "Custo (R$)", "variable": "Tipo de Custo"},
+            title="Evolução dos Custos de demanda (R$)"
+        )
+        st.plotly_chart(fig_dem, use_container_width=True)
+
+        # Gráfico combinado com duas escalas
+        st.subheader("Gráfico Combinado: Demanda Ativa e Consumo", divider = 'blue')
+
+        # Selecionar o tipo de consumo
+        consumo_selecionado_rs = st.selectbox(
+            "Escolha o tipo de consumo para exibir no gráfico:",
+            ["Consumo Fora Ponta (R$)", "Consumo Ponta (R$)", "Consumo Reservado (R$)", "Consumo Reativo (R$)"]
+        )
+
+        fig_combinado_duplo_rs = Figure()
+
+        # Adicionar colunas para a Demanda Ativa no eixo esquerdo
+        fig_combinado_duplo_rs.add_trace(
+            Bar(
+                x=valores_df["Mês"],
+                y=valores_df["Demanda Ativa (R$)"],
+                name="Demanda Ativa (R$)",
+                yaxis="y"
+            )
+        )
+
+        # Adicionar linha para o consumo selecionado no eixo direito
+        fig_combinado_duplo_rs.add_trace(
+            Scatter(
+                x=valores_df["Mês"],
+                y=valores_df[consumo_selecionado_rs],
+                mode="lines+markers",
+                name=consumo_selecionado_rs,
+                yaxis="y2"
+            )
+        )
+
+        # Configurar os eixos duplos
+        fig_combinado_duplo_rs.update_layout(
+            title="Gráfico Combinado: Demanda Ativa e Consumo",
+            xaxis=dict(title="Mês"),
+            yaxis=dict(
+                title="Demanda Ativa (R$)",
+                titlefont=dict(color="#1f77b4"),
+                tickfont=dict(color="#1f77b4")
+            ),
+            yaxis2=dict(
+                title=f"{consumo_selecionado_rs}",
+                titlefont=dict(color="#ff7f0e"),
+                tickfont=dict(color="#ff7f0e"),
+                overlaying="y",
+                side="right"
+            ),
+            legend=dict(orientation="h", x=0.5, xanchor="center", y=1.1),
+            margin=dict(l=50, r=50, t=50, b=50)
+        )
+
+        # Exibir o gráfico no Streamlit
+        st.plotly_chart(fig_combinado_duplo_rs, use_container_width=True)
+
 if __name__ == '__main__':
-    sys.argv = ["streamlit", "run", sys.argv[0], "--server.address", "localhost", "--server.port", "8501"]
-    sys.exit(stcli.main())
+    pass
