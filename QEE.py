@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +21,7 @@ def read_excel_file(file_path):
         print(f"Erro ao ler o arquivo Excel: {e}")
         return None
 
-def process_and_plot_voltage_current_frequency(df):
+def process_and_plot_voltage_current_frequency(df, pasta_imagem):
     if df.empty:
         print("O DataFrame está vazio. Verifique o arquivo de entrada.")
         return
@@ -43,9 +45,10 @@ def process_and_plot_voltage_current_frequency(df):
     des_ten = "Desequilibrio de Tensão (Fasorial) Total"
     des_cor = "Corrente Neutro Calculado"
     pot_atv = "P. Ativa Fund+Harm Total"
+    FP = "FP Real Soma Vetorial"
 
     # Converter colunas numéricas para float
-    for coluna in tensoes + correntes + [frequencia_col] + [pot_rea] + [des_ten] + [des_cor] + [pot_atv]:
+    for coluna in tensoes + correntes + [frequencia_col] + [pot_rea] + [des_ten] + [des_cor] + [pot_atv] + [FP]:
         df[coluna] = df[coluna].astype(str).str.replace(".", "").str.replace(",", ".")
         df[coluna] = df[coluna].astype(float)
 
@@ -83,7 +86,9 @@ def process_and_plot_voltage_current_frequency(df):
     plt.title("Variação das Tensões ao longo do Tempo")
     plt.legend()
     plt.grid(True)
-    plt.show()
+    caminho_salvar = os.path.join(pasta_imagem, 'Tensão')
+    plt.savefig(caminho_salvar, dpi=1200)
+    plt.close()
 
     # Criar gráficos para correntes
     plt.figure(figsize=(12, 5))
@@ -99,7 +104,9 @@ def process_and_plot_voltage_current_frequency(df):
     plt.title("Variação das Correntes ao longo do Tempo")
     plt.legend()
     plt.grid(True)
-    plt.show()
+    caminho_salvar = os.path.join(pasta_imagem, 'Correntes')
+    plt.savefig(caminho_salvar, dpi=1200)
+    plt.close()
 
     # Criar gráfico para frequência
     if frequencia_col in df.columns:
@@ -112,7 +119,9 @@ def process_and_plot_voltage_current_frequency(df):
         plt.title("Variação da Frequência ao longo do Tempo")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        caminho_salvar = os.path.join(pasta_imagem, 'Frequência')
+        plt.savefig(caminho_salvar, dpi=1200)
+        plt.close()
 
     # Criar gráfico para Potência Reativa
     if pot_rea in df.columns:
@@ -125,7 +134,9 @@ def process_and_plot_voltage_current_frequency(df):
         plt.title("Variação da Potência Reativa ao longo Tempo")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        caminho_salvar = os.path.join(pasta_imagem, 'Potência Reativa')
+        plt.savefig(caminho_salvar, dpi=1200)
+        plt.close()
 
     # Criar gráfico para desequilibrio de tensão
     if des_ten in df.columns:
@@ -138,7 +149,9 @@ def process_and_plot_voltage_current_frequency(df):
         plt.title("Desequilibro de tensão ao longo do Tempo")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        caminho_salvar = os.path.join(pasta_imagem, 'Desequilibrio de tensão')
+        plt.savefig(caminho_salvar, dpi=1200)
+        plt.close()
 
     # Criar gráfico para desequilibrio de corrente
     if des_cor in df.columns:
@@ -151,7 +164,9 @@ def process_and_plot_voltage_current_frequency(df):
         plt.title("Desequilibrio de corrente ao longo do Tempo")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        caminho_salvar = os.path.join(pasta_imagem, 'Desequilibrio de corente')
+        plt.savefig(caminho_salvar, dpi=1200)
+        plt.close()
 
     # Criar gráfico para Potência Ativa
     if pot_atv in df.columns:
@@ -164,7 +179,24 @@ def process_and_plot_voltage_current_frequency(df):
         plt.title("Potência Ativa ao longo do Tempo")
         plt.legend()
         plt.grid(True)
-        plt.show()
+        caminho_salvar = os.path.join(pasta_imagem, 'Potência Ativa')
+        plt.savefig(caminho_salvar, dpi=1200)
+        plt.close()
+
+    # Criar gráfico para Fator de Potência
+    if pot_atv in df.columns:
+        plt.figure(figsize=(12, 5))
+        plt.plot(df.index, df[FP], label="Fator de Potência", color="blue", linestyle="-")
+
+        # Configuração do gráfico de Potência Ativa
+        plt.xlabel("Inicio" if "Inicio" in df.columns else "Índice")
+        plt.ylabel("Fator de Potência")
+        plt.title("Fator de potência ao longo do Tempo")
+        plt.legend()
+        plt.grid(True)
+        caminho_salvar = os.path.join(pasta_imagem, 'Fator de potência')
+        plt.savefig(caminho_salvar, dpi=300)
+        plt.close()
 
     return df
 
@@ -312,6 +344,7 @@ def plot_voltage_current_frequency_restrito(df):
     return df
 
 # Aplicação
+pasta_imagem = r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Adutora_centenario"
 file_path = r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Adutora_centenario\dados_analise.xlsx"
 excel_data = read_excel_file(file_path)
 
@@ -319,9 +352,9 @@ if excel_data is not None:
     print(excel_data.head())  # Exibe as primeiras linhas do DataFrame
 
     # Processar e gerar gráficos
-    process_and_plot_voltage_current_frequency(excel_data)
+    process_and_plot_voltage_current_frequency(excel_data, pasta_imagem)
 
 
 #Graficos na faixa de operação nominal
 # Regerar os gráficos na faixa de operação
-plot_voltage_current_frequency_restrito(excel_data)
+#plot_voltage_current_frequency_restrito(excel_data)
