@@ -41,7 +41,7 @@ def get_base64_image(image_path):
     return base64.b64encode(binary_file).decode()
 
 # Caminho para a imagem local
-image_path = "C:\Users\Gilvan Barbosa\PycharmProjects\Dashboard - Usina Santa Clotilde\logo_usina_santa_clotilde.png"
+image_path = r"C:\Users\Gilvan Barbosa\PycharmProjects\Dashboard - Usina Santa Clotilde\logo_usina_santa_clotilde.png"
 
 # Codifica a imagem em base64
 base64_image = get_base64_image(image_path)
