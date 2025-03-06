@@ -41,7 +41,7 @@ def get_base64_image(image_path):
     return base64.b64encode(binary_file).decode()
 
 # Caminho para a imagem local
-image_path = "C:/Users/Gilvan Barbosa/Downloads/logo_usina_santa_clotilde.png"
+image_path = "C:\Users\Gilvan Barbosa\PycharmProjects\Dashboard - Usina Santa Clotilde\logo_usina_santa_clotilde.png"
 
 # Codifica a imagem em base64
 base64_image = get_base64_image(image_path)
@@ -95,11 +95,11 @@ if tipo_analise == 'Ciclo':
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric(label="Custo Mínimo (R$)", value=f"{valores_df['Total (R$)'].min():,.2f}")
+            st.metric(label="Custo Mínimo (R$)", value=f"{valores_df['Total (R$)'].min():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col2:
-            st.metric(label="Custo Médio (R$)", value=f"{valores_df['Total (R$)'].mean():,.2f}")
+            st.metric(label="Custo Médio (R$)", value=f"{valores_df['Total (R$)'].mean():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col3:
-            st.metric(label="Custo Máximo (R$)", value=f"{valores_df['Total (R$)'].max():,.2f}")
+            st.metric(label="Custo Máximo (R$)", value=f"{valores_df['Total (R$)'].max():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col4:
             n_dem_comp = int((unidades_df['Diferença Demanda (kW)']<0).sum())
             st.metric(label="Demandas atingidas", value=f"{n_dem_comp}")
@@ -108,7 +108,7 @@ if tipo_analise == 'Ciclo':
             col1, col2 = st.columns(2)
             dif_dem_comp  = int(3-n_dem_comp)
             with col1:
-                st.metric(label="Nº de Demandas a atingir", value=f"{dif_dem_comp:,.2f}")
+                st.metric(label="Nº de Demandas a atingir", value=f"{dif_dem_comp:,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
             with col2:
                 dem_comp = 0
                 maiores_demandas = unidades_df['Diferença Demanda (kW)'].sort_values(ascending=False)
@@ -117,7 +117,7 @@ if tipo_analise == 'Ciclo':
                     if i > dif_dem_comp:  # Verifica se o índice já ultrapassou o limite
                         break
                     dem_comp += valor
-                st.metric(label="Demanda Complementar atual", value=f"{dem_comp:,.2f}")
+                st.metric(label="Demanda Complementar atual", value=f"{dem_comp:,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         else:
             st.write("A quantidade mínima de demandas a serem atingidas foi satisfeita.")
 
@@ -127,37 +127,37 @@ if tipo_analise == 'Ciclo':
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric(label="Demanda Mínima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].min():,.2f}")
+            st.metric(label="Demanda Mínima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].min():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col2:
-            st.metric(label="Demanda Média (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].mean():,.2f}")
+            st.metric(label="Demanda Média (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].mean():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col3:
-            st.metric(label="Demanda Máxima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].max():,.2f}")
+            st.metric(label="Demanda Máxima (kW)", value=f"{unidades_df['Demanda Ativa (kW)'].max():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col4:
-            st.metric(label="Custo Total (R$)", value=f"{valores_df['Demanda Ativa (R$)'].sum():,.2f}")
+            st.metric(label="Custo Total (R$)", value=f"{valores_df['Demanda Ativa (R$)'].sum():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
 
         st.subheader("Indicadores de Consumo Ativo", divider = 'blue')
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric(label="Consumo Ativo Mínimo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].min():,.2f}")
+            st.metric(label="Consumo Ativo Mínimo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].min():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col2:
-            st.metric(label="Consumo Ativo Médio (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].mean():,.2f}")
+            st.metric(label="Consumo Ativo Médio (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].mean():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col3:
-            st.metric(label="Consumo Ativo Máximo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].max():,.2f}")
+            st.metric(label="Consumo Ativo Máximo (kWh)", value=f"{unidades_df['Consumo Ativo (kWh)'].max():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col4:
-            st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Ativo (R$)'].sum():,.2f}")
+            st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Ativo (R$)'].sum():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
 
         st.subheader("Indicadores de Consumo Reativo", divider = 'blue')
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric(label="Consumo Reativo Mínimo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].min():,.2f}")
+            st.metric(label="Consumo Reativo Mínimo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].min():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col2:
-            st.metric(label="Consumo Reativo Médio (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].mean():,.2f}")
+            st.metric(label="Consumo Reativo Médio (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].mean():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col3:
-            st.metric(label="Consumo Reativo Máximo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].max():,.2f}")
+            st.metric(label="Consumo Reativo Máximo (kVAr)", value=f"{unidades_df['Consumo Reativo (kVAr)'].max():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
         with col4:
-            st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Reativo (R$)'].sum():,.2f}")
+            st.metric(label="Custo Total (R$)", value=f"{valores_df['Consumo Reativo (R$)'].sum():,.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
 
     if mostrar_graficos:
         mostrar_graficos_Unidades = st.sidebar.radio('Escolha a forma de visualização',['Unidades','Reais (R$)'])
@@ -378,18 +378,37 @@ if tipo_analise == 'Mensal':
     # Filtrar os dados com base no mês selecionado
     mes_filtrado_v = valores_df[valores_df['Mês Formatado'] == mes_selectbox]
 
+
     # Indicadores
-    st.subheader("Custos Com Consumo Ativo", divider='blue')
+    st.subheader("Custos Com Consumo", divider='blue')
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric(label="Consumo Fora Ponta (R$)", value=f"{float(mes_filtrado_v['Consumo Fora Ponta (R$)']):.2f}")
+        st.metric(label="Consumo Fora Ponta (R$)", value=f"{float(mes_filtrado_v['Consumo Fora Ponta (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
     with col2:
-        st.metric(label="Custo Ponta (R$)", value=f"{float(mes_filtrado_v['Consumo Ponta (R$)']):.2f}")
+        st.metric(label="Custo Ponta (R$)", value=f"{float(mes_filtrado_v['Consumo Ponta (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
     with col3:
-        st.metric(label="Consumo Reservado (R$)", value=f"{float(mes_filtrado_v['Consumo Reservado (R$)']):.2f}")
+        st.metric(label="Consumo Reservado (R$)", value=f"{float(mes_filtrado_v['Consumo Reservado (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
     with col4:
-        st.metric(label="Custo Total (R$)", value=f"{float(mes_filtrado_v['Consumo Ativo (R$)']):.2f}")
+        st.metric(label="Custo Reativo (R$)", value=f"{float(mes_filtrado_v['Consumo Reativo (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
+
+    st.subheader("Custo Com Demanda", divider='blue')
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(label="Demanda Ativa (R$)", value=f"{float(mes_filtrado_v['Demanda Ativa (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
+    with col2:
+        st.metric(label="Demanda Reativa (R$)", value=f"{float(mes_filtrado_v['Demanda Reativa (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
+    with col3:
+        st.metric(label="Demanda de Ultrapassagem (R$)", value=f"{float(mes_filtrado_v['Demanda de Ultrapassagem (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
+
+    st.subheader("Outros Custos e Custo Total", divider='blue')
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(label="Outros Custos (R$)", value=f"{float(mes_filtrado_v['Outros (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
+    with col2:
+        st.metric(label="Custo Total (R$)", value=f"{float(mes_filtrado_v['Total (R$)']):.2f}".replace('.', '|').replace(',', '.').replace('|', ','))
 
 if __name__ == '__main__':
     pass

@@ -344,8 +344,8 @@ def plot_voltage_current_frequency_restrito(df):
     return df
 
 # Aplicação
-pasta_imagem = r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Adutora_centenario"
-file_path = r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Adutora_centenario\dados_analise.xlsx"
+pasta_imagem = r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Bombeamento_pivo"
+file_path = (r"C:\Users\Gilvan Barbosa\OneDrive\SANTA CLOTILDE\Atividades\3 - Estudos elétricos\Bombeamento_pivo\dados_analise.xlsx")
 excel_data = read_excel_file(file_path)
 
 if excel_data is not None:
